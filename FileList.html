@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Управление каналами | Тёмная таблица-сетка</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', 'Roboto', system-ui, -apple-system, sans-serif;
+            background: #0a0c12;
+            margin: 0;
+            padding: 20px 16px;
+            color: #e7e9f0;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #12141c;
+            border-radius: 20px;
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            transition: all 0.2s ease;
+            border: 1px solid #2a2e3c;
+        }
+
+        /* Компактный строгий хедер */
+        .header {
+            padding: 14px 24px 8px 24px;
+            background: #0f1119;
+            border-bottom: 1px solid #2a2e3c;
+        }
+
+        .header h1 {
+            font-size: 1.45rem;
+            font-weight: 600;
+            margin: 0 0 4px 0;
+            color: #f0f3fa;
+            letter-spacing: -0.2px;
+            background: none;
+            -webkit-background-clip: unset;
+            background-clip: unset;
+            color: #e2e8f0;
+        }
+
+        .sub {
+            color: #9aa4bf;
+            font-size: 0.75rem;
+            border-left: 3px solid #3b82f6;
+            padding-left: 10px;
+            margin-top: 4px;
+            font-weight: 400;
+        }
+
+        /* Компактная панель инструментов */
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 12px 24px;
+            background: #0f1119;
+            border-bottom: 1px solid #232634;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: #1a1e2a;
+            border: 1px solid #2f3548;
+            padding: 6px 14px;
+            border-radius: 28px;
+            font-weight: 500;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #e2e8f0;
+            font-family: inherit;
+            letter-spacing: 0.2px;
+        }
+
+        button i {
+            font-style: normal;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        button.primary {
+            background: #2563eb;
+            border-color: #3b82f6;
+            color: white;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        button.primary:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
+        }
+
+        button.warning {
+            background: #2a2418;
+            border-color: #b45309;
+            color: #fbbf24;
+        }
+
+        button.warning:hover {
+            background: #3b2e1f;
+            border-color: #f59e0b;
+        }
+
+        button.outline {
+            background: #1a1e2a;
+            border-color: #334155;
+            color: #cbd5e1;
+        }
+
+        button.outline:hover {
+            background: #2a2f3f;
+            border-color: #5b6e8c;
+        }
+
+        button.danger {
+            color: #fca5a5;
+            border-color: #7f2e2e;
+            background: #1f1818;
+        }
+
+        button.danger:hover {
+            background: #2d2020;
+            border-color: #f87171;
+        }
+
+        /* Таблица — компактная, строгая, тёмная */
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 0;
+            scrollbar-width: thin;
+            background: #12141c;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+            min-width: 700px;
+        }
+
+        th {
+            background: #0d0f17;
+            padding: 12px 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #cbd5e6;
+            border-bottom: 1px solid #2a2e3c;
+            font-size: 0.7rem;
+            letter-spacing: 0.4px;
+            white-space: nowrap;
+            text-transform: uppercase;
+        }
+
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #1f232f;
+            vertical-align: middle;
+            transition: background 0.1s;
+            color: #e2e8f0;
+        }
+
+        tr:hover td {
+            background-color: #1a1e2c;
+        }
+
+        [contenteditable="true"] {
+            background-color: #0f1119;
+            border-radius: 6px;
+            padding: 4px 6px;
+            margin: -4px -6px;
+            transition: background 0.1s, box-shadow 0.1s;
+            cursor: text;
+            outline: none;
+            word-break: break-word;
+            color: #f1f5f9;
+            font-size: 0.8rem;
+        }
+
+        [contenteditable="true"]:focus {
+            background-color: #1e2438;
+            box-shadow: 0 0 0 2px #3b82f680;
+            border-radius: 8px;
+            color: white;
+        }
+
+        .number-cell {
+            text-align: right;
+            font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+            font-weight: 500;
+            font-size: 0.78rem;
+        }
+
+        /* Тёмная версия красного фона для Pic < 3 */
+        td.pic-low {
+            background-color: #8b1e1e !important;
+            color: #ffe3e3 !important;
+            font-weight: 500;
+        }
+
+        .action-cell {
+            text-align: center;
+            width: 60px;
+        }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: #7f8ea3;
+            padding: 4px 6px;
+            border-radius: 30px;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .delete-btn:hover {
+            background: #2c1f1f;
+            color: #f97373;
+            transform: scale(1.02);
+        }
+
+        /* JSON панель — тёмная, компактная */
+        .json-panel {
+            background: #0b0d14;
+            margin: 0 16px 16px 16px;
+            border-radius: 18px;
+            padding: 10px 14px;
+            font-family: monospace;
+            font-size: 0.7rem;
+            border: 1px solid #2a2e3c;
+        }
+
+        .json-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-wrap: wrap;
+            margin-bottom: 6px;
+        }
+
+        .json-header span {
+            font-weight: 600;
+            color: #a5b4d0;
+            font-size: 0.7rem;
+            letter-spacing: 0.3px;
+        }
+
+        pre {
+            background: #05070c;
+            color: #cbd5e6;
+            padding: 10px;
+            border-radius: 14px;
+            overflow-x: auto;
+            font-size: 0.68rem;
+            margin: 6px 0 0 0;
+            max-height: 160px;
+            border: 1px solid #202433;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .footer-note {
+            font-size: 0.65rem;
+            text-align: center;
+            padding: 12px 16px 16px;
+            color: #6e7c94;
+            border-top: 1px solid #1f232f;
+            background: #0f1119;
+        }
+
+        #jsonFileInput {
+            display: none;
+        }
+
+        /* Адаптивность + компакт */
+        @media (max-width: 680px) {
+            body {
+                padding: 12px 10px;
+            }
+            th, td {
+                padding: 8px 8px;
+            }
+            .toolbar {
+                padding: 10px 16px;
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .btn-group {
+                justify-content: flex-start;
+            }
+            .header {
+                padding: 10px 18px;
+            }
+            button {
+                padding: 5px 12px;
+                font-size: 0.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+ <a class="top-link" href="channels.html">← Список файлов</a>
+    <div class="header">
+        <h1>📡 Каналы / Медиа-сетка</h1>
+        <div class="sub">Строгая таблица · JSON-загрузка · Редактирование на месте · <span style="background:#8b1e1e; padding:2px 8px; border-radius:12px; color:#ffd9d9;">⚠️ Pic < 3 — красный</span></div>
+    </div>
+
+    <div class="toolbar">
+        <div class="btn-group">
+            <button id="addRowBtn" class="primary">➕ Добавить канал</button>
+            <button id="resetBtn" class="warning">⟳ Сброс примеров</button>
+            <button id="exportJsonBtn" class="outline">📋 Показать JSON</button>
+            <button id="loadFileBtn" class="outline">📂 Загрузить JSON</button>
+        </div>
+        <div class="btn-group">
+            <small style="color:#9aa4bf;">✏️ <strong>Клик — редактирование</strong> (числа в Pic/Gif/Video)</small>
+        </div>
+    </div>
+
+    <input type="file" id="jsonFileInput" accept=".json,application/json">
+
+    <div class="table-wrapper">
+        <table id="dataTable">
+            <thead>
+                <tr>
+                    <th>Название канала</th>
+                    <th>ID</th>
+                    <th>Название Сетки</th>
+                    <th class="number-cell">Pic 🖼️</th>
+                    <th class="number-cell">Gif 🎞️</th>
+                    <th class="number-cell">Video ▶️</th>
+                    <th style="text-align: center;">Действия</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+            </tbody>
+        </table>
+    </div>
+
+    <div class="json-panel" id="jsonPanel" style="display: none;">
+        <div class="json-header">
+            <span>📄 JSON (текущие данные таблицы)</span>
+            <button id="copyJsonBtn" class="outline" style="padding: 3px 10px; font-size: 0.65rem;">📋 Копировать</button>
+        </div>
+        <pre id="jsonOutput">Нажмите «Показать JSON»</pre>
+    </div>
+
+    <div class="footer-note">
+        ⚡ Компактный режим | Редактируемые ячейки | Удаление строк | Автоподсветка Pic < 3 (тёмно-красный)
+    </div>
+</div>
+
+<script>
+    (function() {
+        // ----- ССЫЛКИ -----
+        const tbody = document.getElementById('tableBody');
+        const addBtn = document.getElementById('addRowBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const exportBtn = document.getElementById('exportJsonBtn');
+        const jsonPanel = document.getElementById('jsonPanel');
+        const jsonOutput = document.getElementById('jsonOutput');
+        const copyJsonBtn = document.getElementById('copyJsonBtn');
+        const loadFileBtn = document.getElementById('loadFileBtn');
+        const jsonFileInput = document.getElementById('jsonFileInput');
+
+        // ----- ДЕМО-ДАННЫЕ (примеры с разными pic) -----
+        const defaultRowsData = [
+            { channel: "Технологии", id: "tech_01", grid: "IT-сетка", pic: 12, gif: 4, video: 20 },
+            { channel: "Развлечения", id: "ent_02", grid: "Медиа-сеть", pic: 30, gif: 15, video: 45 },
+            { channel: "Образование", id: "edu_03", grid: "Учебная сетка", pic: 2, gif: 2, video: 12 },
+            { channel: "Спорт", id: "sprt_04", grid: "Спортивная сетка", pic: 23, gif: 9, video: 31 },
+            { channel: "Кино", id: "film_05", grid: "Киноканалы", pic: 0, gif: 3, video: 88 }
+        ];
+
+        // ----- Функция обновления подсветки Pic (значение < 3) -----
+        function applyPicHighlight() {
+            const rows = tbody.querySelectorAll('tr');
+            for (let row of rows) {
+                const cells = row.querySelectorAll('td');
+                if (cells.length < 7) continue;
+                const picCell = cells[3];
+                if (!picCell) continue;
+                const rawValue = picCell.innerText.trim();
+                let num = parseFloat(rawValue);
+                if (isNaN(num)) num = 0;
+                if (num < 3) {
+                    picCell.classList.add('pic-low');
+                } else {
+                    picCell.classList.remove('pic-low');
+                }
+            }
+        }
+
+        // ----- Создание строки таблицы из объекта -----
+        function createTableRow(data) {
+            const tr = document.createElement('tr');
+
+            const tdChannel = document.createElement('td');
+            tdChannel.setAttribute('contenteditable', 'true');
+            tdChannel.innerText = data.channel || '';
+            tr.appendChild(tdChannel);
+
+            const tdId = document.createElement('td');
+            tdId.setAttribute('contenteditable', 'true');
+            tdId.innerText = data.id || '';
+            tr.appendChild(tdId);
+
+            const tdGrid = document.createElement('td');
+            tdGrid.setAttribute('contenteditable', 'true');
+            tdGrid.innerText = data.grid || '';
+            tr.appendChild(tdGrid);
+
+            const tdPic = document.createElement('td');
+            tdPic.setAttribute('contenteditable', 'true');
+            tdPic.className = 'number-cell';
+            tdPic.innerText = (data.pic !== undefined && data.pic !== null) ? data.pic : '0';
+            tr.appendChild(tdPic);
+
+            const tdGif = document.createElement('td');
+            tdGif.setAttribute('contenteditable', 'true');
+            tdGif.className = 'number-cell';
+            tdGif.innerText = (data.gif !== undefined && data.gif !== null) ? data.gif : '0';
+            tr.appendChild(tdGif);
+
+            const tdVideo = document.createElement('td');
+            tdVideo.setAttribute('contenteditable', 'true');
+            tdVideo.className = 'number-cell';
+            tdVideo.innerText = (data.video !== undefined && data.video !== null) ? data.video : '0';
+            tr.appendChild(tdVideo);
+
+            const tdAction = document.createElement('td');
+            tdAction.className = 'action-cell';
+            const delBtn = document.createElement('button');
+            delBtn.innerText = '🗑️';
+            delBtn.classList.add('delete-btn');
+            delBtn.title = 'Удалить канал';
+            delBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                tr.remove();
+                if (jsonPanel.style.display === 'block') {
+                    updateJsonDisplay();
+                }
+                applyPicHighlight();
+            });
+            tdAction.appendChild(delBtn);
+            tr.appendChild(tdAction);
+            return tr;
+        }
+
+        // ----- Отрисовка всей таблицы из массива объектов -----
+        function renderTableFromData(rowsData) {
+            tbody.innerHTML = '';
+            rowsData.forEach(item => {
+                const row = createTableRow(item);
+                tbody.appendChild(row);
+            });
+            applyPicHighlight();
+        }
+
+        // ----- Сбор данных из текущей таблицы (массив объектов) -----
+        function getCurrentTableData() {
+            const rows = tbody.querySelectorAll('tr');
+            const dataArray = [];
+            for (let row of rows) {
+                const cells = row.querySelectorAll('td');
+                if (cells.length < 7) continue;
+                const channelName = cells[0]?.innerText.trim() || '';
+                const channelId = cells[1]?.innerText.trim() || '';
+                const gridName = cells[2]?.innerText.trim() || '';
+                let picRaw = cells[3]?.innerText.trim() || '0';
+                let gifRaw = cells[4]?.innerText.trim() || '0';
+                let videoRaw = cells[5]?.innerText.trim() || '0';
+
+                let picNum = parseFloat(picRaw);
+                let gifNum = parseFloat(gifRaw);
+                let videoNum = parseFloat(videoRaw);
+                if (isNaN(picNum)) picNum = 0;
+                if (isNaN(gifNum)) gifNum = 0;
+                if (isNaN(videoNum)) videoNum = 0;
+
+                dataArray.push({
+                    channel: channelName,
+                    id: channelId,
+                    grid: gridName,
+                    pic: picNum,
+                    gif: gifNum,
+                    video: videoNum
+                });
+            }
+            return dataArray;
+        }
+
+        // ----- Показать актуальный JSON в панели -----
+        function updateJsonDisplay() {
+            const tableData = getCurrentTableData();
+            const jsonStr = JSON.stringify(tableData, null, 2);
+            jsonOutput.innerText = jsonStr;
+            jsonPanel.style.display = 'block';
+        }
+
+        // ----- Добавить строку с пустыми/нулевыми значениями -----
+        function addNewRow() {
+            const newData = {
+                channel: "Новый канал",
+                id: "id_" + Date.now(),
+                grid: "Базовая сетка",
+                pic: 0,
+                gif: 0,
+                video: 0
+            };
+            const newRow = createTableRow(newData);
+            tbody.appendChild(newRow);
+            applyPicHighlight();
+            const firstEditable = newRow.querySelector('td[contenteditable="true"]');
+            if (firstEditable) {
+                firstEditable.focus();
+                const range = document.createRange();
+                const sel = window.getSelection();
+                range.selectNodeContents(firstEditable);
+                sel?.removeAllRanges();
+                sel?.addRange(range);
+            }
+            if (jsonPanel.style.display === 'block') {
+                updateJsonDisplay();
+            }
+        }
+
+        // ----- Сброс к примерам -----
+        function resetToExamples() {
+            const freshData = defaultRowsData.map(item => ({ ...item }));
+            renderTableFromData(freshData);
+            if (jsonPanel.style.display === 'block') {
+                updateJsonDisplay();
+            }
+        }
+
+        function showJson() {
+            updateJsonDisplay();
+        }
+
+        // ----- Копирование JSON в буфер -----
+        function copyJsonToClipboard() {
+            const jsonText = jsonOutput.innerText;
+            if (!jsonText || jsonText === 'Нажмите «Показать JSON»') {
+                alert('Сначала нажмите «Показать JSON», чтобы сгенерировать данные.');
+                return;
+            }
+            navigator.clipboard.writeText(jsonText).then(() => {
+                const originalText = copyJsonBtn.innerText;
+                copyJsonBtn.innerText = '✅ Скопировано!';
+                setTimeout(() => {
+                    copyJsonBtn.innerText = originalText;
+                }, 1500);
+            }).catch(err => {
+                alert('Не удалось скопировать: ' + err);
+            });
+        }
+
+        // ----- Загрузка данных из data.json при старте (если доступен) -----
+        async function loadInitialData() {
+            try {
+                const response = await fetch('data.json');
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const jsonData = await response.json();
+                if (Array.isArray(jsonData) && jsonData.length > 0) {
+                    renderTableFromData(jsonData);
+                    console.log('✅ Загружено из data.json');
+                } else {
+                    renderTableFromData(defaultRowsData);
+                }
+            } catch (error) {
+                console.warn('⚠️ data.json не загружен, используются демо-данные');
+                renderTableFromData(defaultRowsData);
+            }
+            jsonPanel.style.display = 'none';
+        }
+
+        // ----- Загрузка из выбранного пользователем файла -----
+        function loadJsonFromFile(file) {
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                try {
+                    const data = JSON.parse(ev.target.result);
+                    if (Array.isArray(data)) {
+                        renderTableFromData(data);
+                        if (jsonPanel.style.display === 'block') {
+                            updateJsonDisplay();
+                        }
+                        console.log('📁 Файл загружен');
+                    } else {
+                        alert('Ошибка: JSON должен быть массивом объектов.');
+                    }
+                } catch (err) {
+                    alert('Ошибка парсинга JSON: ' + err.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // ----- Валидация числовых ячеек (blur) + обновление подсветки для Pic -----
+        function attachNumericValidation() {
+            tbody.addEventListener('blur', (e) => {
+                const target = e.target;
+                if (!target.isContentEditable) return;
+                const parentRow = target.closest('tr');
+                if (!parentRow) return;
+                const cells = parentRow.querySelectorAll('td');
+                const index = Array.from(parentRow.children).indexOf(target.closest('td'));
+                if (index === 3 || index === 4 || index === 5) {
+                    let rawValue = target.innerText.trim();
+                    let numberValue = parseFloat(rawValue);
+                    if (isNaN(numberValue)) {
+                        target.style.backgroundColor = '#2d2020';
+                        setTimeout(() => target.style.backgroundColor = '', 400);
+                        numberValue = 0;
+                        target.innerText = '0';
+                    } else {
+                        let intValue = Math.floor(numberValue);
+                        if (intValue !== numberValue) target.innerText = intValue;
+                        else target.innerText = numberValue;
+                    }
+                    let finalNum = parseFloat(target.innerText);
+                    if (finalNum < 0) target.innerText = '0';
+                    if (index === 3) applyPicHighlight();
+                }
+            });
+        }
+
+        // ----- Запрет ввода нецифровых символов в числовых колонках -----
+        function enhanceNumberCellsInput() {
+            tbody.addEventListener('keydown', (e) => {
+                const target = e.target;
+                if (!target.isContentEditable) return;
+                const parentRow = target.closest('tr');
+                if (!parentRow) return;
+                const cells = Array.from(parentRow.children);
+                const index = cells.indexOf(target.closest('td'));
+                if (index === 3 || index === 4 || index === 5) {
+                    const key = e.key;
+                    const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab', 'Enter', 'Home', 'End'];
+                    if (!allowedKeys.includes(key) && !/^\d$/.test(key)) {
+                        e.preventDefault();
+                    }
+                    if (key === '-' && target.innerText.includes('-')) {
+                        e.preventDefault();
+                    }
+                }
+            });
+        }
+
+        // ----- Автообновление JSON, если панель открыта, при любых изменениях -----
+        function autoRefreshJsonIfVisible() {
+            const observer = new MutationObserver(() => {
+                if (jsonPanel.style.display === 'block') {
+                    updateJsonDisplay();
+                }
+            });
+            observer.observe(tbody, { childList: true, subtree: true, characterData: true, attributes: false });
+        }
+
+        // ----- Обработчики -----
+        addBtn.addEventListener('click', addNewRow);
+        resetBtn.addEventListener('click', resetToExamples);
+        exportBtn.addEventListener('click', showJson);
+        copyJsonBtn.addEventListener('click', copyJsonToClipboard);
+
+        loadFileBtn.addEventListener('click', () => {
+            jsonFileInput.click();
+        });
+
+        jsonFileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                loadJsonFromFile(file);
+            }
+            jsonFileInput.value = '';
+        });
+
+        // При любом инпуте в таблице обновляем JSON (если открыт) + подсветку pic
+        tbody.addEventListener('input', () => {
+            if (jsonPanel.style.display === 'block') {
+                updateJsonDisplay();
+            }
+            applyPicHighlight();
+        });
+
+        // ----- Инициализация всех систем -----
+        attachNumericValidation();
+        enhanceNumberCellsInput();
+        autoRefreshJsonIfVisible();
+        loadInitialData(); // рендер с проверкой data.json либо демо
+    })();
+</script>
+</body>
+</html>

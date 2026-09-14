@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Каналы</title> 
+<style>
+  :root {
+    --bg: #0f1115;
+    --card-bg: #1a1d24;
+    --card-border: #2a2e37;
+    --text-primary: #f2f3f5;
+    --text-secondary: #9aa1ac;
+    --accent: #6c8cff;
+    --accent-soft: rgba(108, 140, 255, 0.12);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text-primary);
+    padding: 40px 20px;
+  }
+
+  .wrap {
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  h1 {
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0 0 4px;
+  }
+
+  .subtitle {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-bottom: 28px;
+  }
+
+  .top-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--accent);
+    text-decoration: none;
+    margin-bottom: 16px;
+  }
+  .top-link:hover { text-decoration: underline; }
+
+  .search {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 10px;
+    border: 1px solid var(--card-border);
+    background: var(--card-bg);
+    color: var(--text-primary);
+    font-size: 14px;
+    margin-bottom: 24px;
+    outline: none;
+  }
+  .search:focus { border-color: var(--accent); }
+
+  .table-wrap {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  thead th {
+    text-align: left;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-secondary);
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--card-border);
+    font-weight: 600;
+  }
+
+  th.sortable {
+    cursor: pointer;
+    user-select: none;
+  }
+  th.sortable:hover { color: var(--text-primary); }
+  .sort-arrow {
+    display: inline-block;
+    margin-left: 4px;
+    opacity: 0.5;
+  }
+  .sort-arrow.active { opacity: 1; color: var(--accent); }
+
+  tbody tr {
+    border-bottom: 1px solid var(--card-border);
+    transition: background 0.15s ease;
+  }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: rgba(255,255,255,0.02); }
+
+  tbody td {
+    padding: 14px 20px;
+    font-size: 14px;
+  }
+
+  .col-name {
+    font-weight: 600;
+  }
+
+  .col-subs {
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+
+  .badge {
+    display: inline-block;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 999px;
+  }
+
+  .empty {
+    text-align: center;
+    color: var(--text-secondary);
+    padding: 40px 0;
+    display: none;
+  }
+
+  .chart-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin: 32px 0 4px;
+  }
+  .chart-subtitle {
+    color: var(--text-secondary);
+    font-size: 13px;
+    margin-bottom: 16px;
+  }
+
+  .chart-wrap {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    padding: 24px 16px 12px;
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 260px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .chart-tooltip {
+    position: absolute;
+    pointer-events: none;
+    background: #0b0d12;
+    border: 1px solid var(--accent);
+    color: var(--text-primary);
+    font-size: 12px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    white-space: nowrap;
+    transform: translate(-50%, -100%);
+    opacity: 0;
+    transition: opacity 0.1s ease;
+    z-index: 10;
+  }
+  .chart-tooltip.visible { opacity: 1; }
+  .chart-tooltip .tt-name { font-weight: 600; }
+  .chart-tooltip .tt-subs { color: var(--text-secondary); }
+
+  .bar-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    height: 100%;
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .bar {
+    width: 100%;
+    max-width: 14px;
+    background: linear-gradient(180deg, var(--accent), #4a63cc);
+    border-radius: 3px 3px 0 0;
+    transition: height 0.25s ease;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="top-link" href="FileList.html">← Список файлов</a>
+  <h1>Каналы</h1>
+  <div class="subtitle">Название канала, число подписчиков и сетка</div>
+
+  <input class="search" id="search" placeholder="Поиск по названию канала или сетке...">
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Канал</th>
+          <th class="sortable" id="sortSubs">Подписчики <span class="sort-arrow" id="sortArrow">↕</span></th>
+          <th>Сетка</th>
+        </tr>
+      </thead>
+      <tbody id="grid"></tbody>
+    </table>
+  </div>
+  <div class="empty" id="empty">Ничего не найдено</div>
+
+  <div class="chart-title">Подписчики по каналам</div>
+  <div class="chart-subtitle">Столбчатая диаграмма</div>
+  <div class="chart-wrap" id="chart">
+    <div class="chart-tooltip" id="chartTooltip"></div>
+  </div>
+</div>
+
+<script>
+  let channels = [];
+  let sortDir = null; // null | 'asc' | 'desc'
+
+  function formatNumber(n) {
+    if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, '') + ' млн';
+    if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + ' тыс';
+    return n.toString();
+  }
+
+  function getCurrentList() {
+    const q = document.getElementById('search').value.trim().toLowerCase();
+    let list = channels.filter(ch =>
+      String(ch.name).toLowerCase().includes(q) || String(ch.network).toLowerCase().includes(q)
+    );
+    if (sortDir === 'asc') list = [...list].sort((a, b) => a.subscribers - b.subscribers);
+    if (sortDir === 'desc') list = [...list].sort((a, b) => b.subscribers - a.subscribers);
+    return list;
+  }
+
+  function renderTable(list) {
+    const grid = document.getElementById('grid');
+    const empty = document.getElementById('empty');
+    grid.innerHTML = '';
+
+    if (list.length === 0) {
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+
+    list.forEach(ch => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td class="col-name">${String(ch.name)}</td>
+        <td class="col-subs">${formatNumber(ch.subscribers)}</td>
+        <td><span class="badge">${ch.network}</span></td>
+      `;
+      grid.appendChild(row);
+    });
+  }
+
+  function renderChart(list) {
+    const chart = document.getElementById('chart');
+    const tooltip = document.getElementById('chartTooltip');
+    chart.querySelectorAll('.bar-col').forEach(el => el.remove());
+    if (list.length === 0) return;
+
+    const max = Math.max(...list.map(ch => ch.subscribers));
+
+    list.forEach(ch => {
+      const col = document.createElement('div');
+      col.className = 'bar-col';
+      const heightPct = max > 0 ? (ch.subscribers / max) * 100 : 0;
+      col.innerHTML = `<div class="bar" style="height: ${heightPct}%"></div>`;
+
+      col.addEventListener('mouseenter', () => {
+        tooltip.innerHTML = `<div class="tt-name">${String(ch.name)}</div><div class="tt-subs">${formatNumber(ch.subscribers)} подписчиков</div>`;
+        tooltip.classList.add('visible');
+      });
+      col.addEventListener('mousemove', (e) => {
+        const rect = chart.getBoundingClientRect();
+        tooltip.style.left = (e.clientX - rect.left) + 'px';
+        tooltip.style.top = (e.clientY - rect.top - 10) + 'px';
+      });
+      col.addEventListener('mouseleave', () => {
+        tooltip.classList.remove('visible');
+      });
+
+      chart.appendChild(col);
+    });
+  }
+
+  function renderAll() {
+    const list = getCurrentList();
+    renderTable(list);
+    renderChart(list);
+  }
+
+  document.getElementById('search').addEventListener('input', renderAll);
+
+  document.getElementById('sortSubs').addEventListener('click', () => {
+    sortDir = sortDir === 'desc' ? 'asc' : sortDir === 'asc' ? null : 'desc';
+    const arrow = document.getElementById('sortArrow');
+    arrow.textContent = sortDir === 'desc' ? '↓' : sortDir === 'asc' ? '↑' : '↕';
+    arrow.classList.toggle('active', sortDir !== null);
+    renderAll();
+  });
+
+  fetch('data_sub.json?t=' + Date.now(), { cache: 'no-store' })
+    .then(res => {
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    })
+    .then(data => {
+      channels = data;
+      renderAll();
+    })
+    .catch(err => {
+      const empty = document.getElementById('empty');
+      empty.textContent = 'Не удалось загрузить data_sub.json: ' + err.message;
+      empty.style.display = 'block';
+      console.error(err);
+    });
+</script>
+
+</body>
+</html>
